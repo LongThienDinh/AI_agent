@@ -1,0 +1,30 @@
+# Creates a paid web service and persistent disk. Review current charges first.
+services:
+  - type: web
+    name: studydesk-ai-agent
+    runtime: docker
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    numInstances: 1
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "8000"
+      - key: LLM_PROVIDER
+        value: ollama_cloud
+      - key: LLM_MODEL
+        value: gemma4:31b
+      - key: OLLAMA_API_KEY
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: studydesk-data
+      mountPath: /var/data
+      sizeGB: 1
