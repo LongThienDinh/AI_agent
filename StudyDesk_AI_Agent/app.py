@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""StudyDesk: natural-language planning with reviewed, allowlisted actions.
-
-Run ``python3 app.py``. All application dependencies are in Python's standard library.
-The HTTP server is intended for one classroom instance, behind HTTPS when hosted.
-"""
 from __future__ import annotations
 
 from collections import defaultdict, deque
@@ -381,8 +375,8 @@ def main():
     load_env(ROOT / ".env")
     host = os.getenv("HOST", "127.0.0.1")
     password = os.getenv("APP_PASSWORD", "")
-    if host not in {"127.0.0.1", "localhost", "::1"} and not password:
-        raise SystemExit("Set APP_PASSWORD before binding to a public/network interface.")
+    # Empty APP_PASSWORD enables a public shared workspace, including hosted use.
+    # Setting APP_PASSWORD preserves the optional login gate.
     try:
         port = int(os.getenv("PORT", "8000"))
         if not 1 <= port <= 65535:
