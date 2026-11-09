@@ -1,4 +1,3 @@
-# Creates a paid web service and persistent disk. Review current charges first.
 services:
   - type: web
     name: studydesk-ai-agent
