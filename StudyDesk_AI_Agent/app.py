@@ -24,7 +24,6 @@ DEFAULT_MODELS = {
 
 
 def load_env(path: Path) -> None:
-    """Read simple KEY=value pairs, without executing shell expressions."""
     if not path.is_file():
         return
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -47,7 +46,6 @@ class APIError(Exception):
 
 
 class AgentApplication:
-    """Owns the executor, provider settings, short-lived plans, and login sessions."""
     def __init__(self, data_dir: Path, password: str = "", secure_cookie: bool = False):
         self.executor = AgentExecutor(data_dir)
         self.password = password
@@ -83,7 +81,6 @@ class AgentApplication:
     def throttle(self, key: str, maximum: int = 20, window: int = 60) -> None:
         with self.lock:
             now = time.monotonic()
-            # Expire unused buckets as well as events in the current one.
             for stale in [k for k, v in self.requests.items() if not v or v[-1] < now - 300]:
                 del self.requests[stale]
             events = self.requests[key]
@@ -179,7 +176,6 @@ class AgentApplication:
         plan_id, confirm = body.get("plan_id"), body.get("confirm_destructive", False)
         if not isinstance(plan_id, str) or type(confirm) is not bool:
             raise APIError("Invalid plan or confirmation.")
-        # Serialize executions: a saved plan is consumed at most once, including on failure.
         with self.execution_lock:
             with self.lock:
                 self._expire_plans()
@@ -225,7 +221,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         return self.server.application
 
     def log_message(self, fmt, *args):
-        # Never print request bodies, headers, keys, or query-string contents.
         print(f"HTTP {self.command} {urlsplit(self.path).path}", flush=True)
 
     def respond(self, payload, status=200, headers=None):
@@ -251,7 +246,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def check_host(self):
-        # Restrict loopback instances against DNS rebinding.
         bound_host = self.server.server_address[0]
         host = urlsplit("//" + self.headers.get("Host", "")).hostname
         if bound_host in {"127.0.0.1", "::1"} and host not in {"localhost", "127.0.0.1", "::1"}:
@@ -375,8 +369,6 @@ def main():
     load_env(ROOT / ".env")
     host = os.getenv("HOST", "127.0.0.1")
     password = os.getenv("APP_PASSWORD", "")
-    # Empty APP_PASSWORD enables a public shared workspace, including hosted use.
-    # Setting APP_PASSWORD preserves the optional login gate.
     try:
         port = int(os.getenv("PORT", "8000"))
         if not 1 <= port <= 65535:
